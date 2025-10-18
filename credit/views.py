@@ -160,3 +160,117 @@ def check_eligibility(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+
+@csrf_exempt
+@api_view(['POST'])
+def create_loan(request):
+    try:
+        import json
+        data = json.loads(request.body)
+        customer_id = data.get('customer_id')
+        loan_amount = float(data.get('loan_amount', 0))
+        interest_rate = float(data.get('interest_rate', 0))
+        tenure = int(data.get('tenure', 0))
+
+        if not customer_id:
+            return JsonResponse({'error': 'customer_id is required'}, status=400)
+
+  
+        customer = Customer.objects.filter(customer_id=customer_id).first()
+        if not customer:
+            return JsonResponse({'error': 'Customer not found'}, status=404)
+
+     
+        past_loans = Loan.objects.filter(customer=customer)
+        credit_score = 0
+      
+        on_time_loans = past_loans.filter(paid_on_time=True).count()
+        credit_score += min(on_time_loans * 10, 30)
+
+    
+        total_loans = past_loans.count()
+        credit_score += min(total_loans * 5, 20)
+
+ 
+        from datetime import datetime
+        current_year = datetime.now().year
+        loans_this_year = past_loans.filter(start_date__year=current_year).count()
+        credit_score += min(loans_this_year * 5, 10)
+
+      
+        approved_volume = sum([loan.loan_amount for loan in past_loans])
+        credit_score += min(approved_volume / 100000, 20)
+
+     
+        if customer.current_debt + loan_amount > customer.approved_limit:
+            credit_score = 0
+
+        
+        approve = False
+        corrected_interest_rate = interest_rate
+
+        if credit_score > 50:
+            approve = True
+            corrected_interest_rate = max(interest_rate, 12)
+        elif 30 < credit_score <= 50:
+            approve = True
+            if interest_rate < 12:
+                corrected_interest_rate = 12
+        elif 10 < credit_score <= 30:
+            approve = True
+            if interest_rate < 16:
+                corrected_interest_rate = 16
+        else:
+            approve = False
+
+    
+        monthly_rate = corrected_interest_rate / 100 / 12
+        if monthly_rate == 0:
+            emi = loan_amount / tenure
+        else:
+            emi = loan_amount * monthly_rate / (1 - (1 + monthly_rate) ** -tenure)
+
+   
+        if (customer.current_debt + emi) > 0.5 * customer.monthly_income:
+            approve = False
+
+      
+        loan_id = None
+        message = ''
+        if approve:
+            from datetime import date
+            start_date = date.today()
+            end_date = date(start_date.year + tenure // 12, start_date.month + tenure % 12, start_date.day)
+            
+            loan = Loan.objects.create(
+                customer=customer,
+                loan_amount=loan_amount,
+                tenure=tenure,
+                interest_rate=corrected_interest_rate,
+                monthly_installment=round(emi, 2),
+                start_date=start_date,
+                end_date=end_date,
+                emis_paid_on_time=0  # new loan
+            )
+          
+            customer.current_debt += emi
+            customer.save()
+            loan_id = loan.loan_id
+            message = "Loan approved successfully"
+        else:
+            message = "Loan not approved due to eligibility criteria"
+
+        response = {
+            "loan_id": loan_id,
+            "customer_id": customer.customer_id,
+            "loan_approved": approve,
+            "message": message,
+            "monthly_installment": round(emi, 2)
+        }
+
+        return JsonResponse(response)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
