@@ -309,3 +309,37 @@ def view_loan(request, loan_id):
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    
+@csrf_exempt
+
+@api_view(['GET'])
+def view_loans_by_customer(request, customer_id):
+    try:
+        customer = Customer.objects.filter(customer_id=customer_id).first()
+        if not customer:
+            return Response({'error': 'Customer not found'}, status=404)
+        
+        loans = Loan.objects.filter(customer=customer)
+        loan_list = []
+
+        for loan in loans:
+           
+            repayments_left = 0
+            if loan.tenure > 0 and loan.monthly_installment > 0:
+              
+                repayments_left = loan.tenure - loan.emis_paid_on_time
+
+            loan_list.append({
+                'loan_id': loan.loan_id,
+                'loan_amount': loan.loan_amount,
+                'loan_approved': True, 
+                'interest_rate': loan.interest_rate,
+                'monthly_installment': loan.monthly_installment,
+                'repayments_left': repayments_left
+            })
+
+        return Response({'customer_id': customer_id, 'loans': loan_list}, status=200)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
