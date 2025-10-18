@@ -274,3 +274,38 @@ def create_loan(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@api_view(['GET'])
+def view_loan(request, loan_id):
+    try:
+        
+        loan = Loan.objects.filter(loan_id=loan_id).first()
+        if not loan:
+            return Response({'error': 'Loan not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+     
+        customer = loan.customer
+        customer_data = {
+            "id": customer.customer_id,
+            "first_name": customer.first_name,
+            "last_name": customer.last_name,
+            "phone_number": customer.phone_number,
+            "age": customer.age
+        }
+
+       
+        response = {
+            "loan_id": loan.loan_id,
+            "customer": customer_data,
+            "loan_amount": loan.loan_amount,
+            "interest_rate": loan.interest_rate,
+            "loan_approved": True if loan.loan_amount <= customer.approved_limit else False,
+            "monthly_installment": loan.monthly_installment,
+            "tenure": loan.tenure
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
