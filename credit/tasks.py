@@ -3,12 +3,12 @@ import pandas as pd
 from .models import Customer, Loan
 from datetime import datetime
 
-# --------- Task 1: Load Customer Data ------------
+
 @shared_task
 def import_customer_data(file_path):
     df = pd.read_excel(file_path)
     
-    # Normalize column names
+    
     df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
      
     for _, row in df.iterrows():
@@ -26,7 +26,7 @@ def import_customer_data(file_path):
     return "Customer data imported successfully"
 
 
-# --------- Task 2: Load Loan Data ------------
+
 @shared_task
 def import_loan_data(file_path):
     df = pd.read_excel(file_path)

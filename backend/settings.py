@@ -77,11 +77,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'creditdb',         # your database name
-        'USER': 'postgres',         # default postgres user
-        'PASSWORD': ',@Jp89.;',  # replace with your PostgreSQL password
-        'HOST': 'localhost',        # database is on your local machine
-        'PORT': '5432',             # default postgres port
+        'NAME': 'creditdb',        
+        'USER': 'postgres',       
+        'PASSWORD': ',@Jp89.;',  
+        'HOST': 'localhost',        
+        'PORT': '5432',             
     }
 }
 
@@ -129,7 +129,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Celery Configuration
+
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']

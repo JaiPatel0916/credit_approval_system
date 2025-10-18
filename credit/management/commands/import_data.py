@@ -1,4 +1,4 @@
-# import_excel_data.py
+
 from django.core.management.base import BaseCommand
 from credit.tasks import import_customer_data, import_loan_data
 
