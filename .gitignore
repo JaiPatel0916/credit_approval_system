@@ -1,0 +1,23 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+env/
+
+# Django migrations (optional, if you want others to create their own)
+# credit/migrations/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files (VSCode, PyCharm)
+.vscode/
+.idea/
+
+db.sqlite3
+customer_data.xlsx
+loan_data.xlsx
+~$*.xlsx
