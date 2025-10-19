@@ -252,7 +252,7 @@ def create_loan(request):
                 monthly_installment=round(emi, 2),
                 start_date=start_date,
                 end_date=end_date,
-                emis_paid_on_time=0  # new loan
+                emis_paid_on_time=0 
             )
           
             customer.current_debt += emi
