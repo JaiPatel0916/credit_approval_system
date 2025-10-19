@@ -80,11 +80,10 @@ DATABASES = {
         'NAME': 'creditdb',        
         'USER': 'postgres',       
         'PASSWORD': ',@Jp89.;',  
-        'HOST': 'localhost',        
+        'HOST': 'host.docker.internal',        
         'PORT': '5432',             
     }
 }
-
 
 
 # Password validation
@@ -130,8 +129,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'

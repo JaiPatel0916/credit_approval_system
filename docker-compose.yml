@@ -1,0 +1,51 @@
+services:
+  web:
+    build: .
+    command: sh -c "./wait-for-it.sh db:5432 -- ./wait-for-it.sh redis:6379 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      DEBUG: "1"
+      DJANGO_DB_HOST: host.docker.internal 
+      DJANGO_DB_PORT: 5432
+      DJANGO_DB_NAME: creditdb
+      DJANGO_DB_USER: postgres
+      DJANGO_DB_PASSWORD: ',@Jp89.;'
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    restart: always
+
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_DB: creditdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ',@Jp89.;'
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+    command: sh -c "./wait-for-it.sh db:5432 -- ./wait-for-it.sh redis:6379 -- celery -A backend worker -l info"
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/app
+    restart: always
+
+volumes:
+  postgres_data:
